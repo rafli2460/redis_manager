@@ -32,14 +32,25 @@ def get_list_keys():
               result.append(key)
        return jsonify(results = result)
 
-@app.route("/delete/<keys>", methods=['POST'])
-def delete_keys(keys):
+@app.route("/delete", methods=['POST'])
+def delete_keys():
     if request.method == 'POST':
-        r.delete(keys)
-        return {'status': True, 'message': 'keys '+keys+' has been deleted'}
+        input_key = request.form['keys']
+        status_key = False
+        for key in r.scan_iter("*"):
+            if key == input_key:
+                status_key = True
+
+        if status_key == False:
+            return {'status': False, 'message': 'keys '+input_key+' not found'}
+        else:
+            r.delete(input_key)
+            return {'status': True, 'message': 'keys '+input_key+' has been deleted'}
+
 
 if __name__ == '__main__':
     print("\033c", end="")
     print("Scola Redis manager")
     print("Listening at: "+app_host+" port "+app_port )
+    # app.debug = True
     serve(app, host=app_host, port=app_port)
